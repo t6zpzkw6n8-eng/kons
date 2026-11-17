@@ -85,3 +85,7 @@ for = "/manifest.webmanifest"
 
 [headers.values]
 Content-Type = "application/manifest+json"
+
+# ВРЕМЕННО, только в служебных ветках qa-*: прогон всех проверок. В main не мержить.
+[context.branch-deploy]
+command = '''set +e; pnpm run build; B=$?; echo '=== DTS ==='; git --no-pager diff --stat -- src/auto-imports.d.ts src/components.d.ts src/typed-router.d.ts; echo '=== LINT ==='; pnpm exec eslint . -f json -o /tmp/lint.json; L=$?; node -e "const r=require('/tmp/lint.json');let n=0;for(const f of r)for(const m of f.messages){n++;console.log('LINT '+f.filePath.replace(process.cwd()+'/','')+':'+m.line+':'+m.column+' '+(m.severity==2?'error':'warn')+' '+m.ruleId+' '+String(m.message).split(String.fromCharCode(10)).join(' '))}console.log('LINT_TOTAL '+n)"; echo '=== TYPECHECK ==='; pnpm typecheck > /tmp/tsc.txt 2>&1; T=$?; sed 's/^/TSC /' /tmp/tsc.txt | head -60; echo '=== TEST ==='; pnpm exec vitest run > /tmp/test.txt 2>&1; V=$?; sed 's/^/TEST /' /tmp/test.txt | head -80; echo "AUDIT_RESULT build=$B lint=$L typecheck=$T test=$V"; exit $B'''
