@@ -85,3 +85,7 @@ for = "/manifest.webmanifest"
 
 [headers.values]
 Content-Type = "application/manifest+json"
+
+# ВРЕМЕННО, только в служебной ветке qa-audit: прогон всех проверок. В main не мержить.
+[context.qa-audit]
+command = "set +e; pnpm run build; B=$?; echo '=== GENERATED DTS DIFF ==='; git --no-pager diff -- src/components.d.ts src/typed-router.d.ts src/auto-imports.d.ts; echo '=== LINT ==='; pnpm lint; L=$?; echo '=== TYPECHECK ==='; pnpm typecheck; T=$?; echo '=== TEST ==='; pnpm exec vitest run; V=$?; echo '=== DEPS ==='; pnpm ls --depth 0 2>&1 | head -80; echo \"AUDIT_RESULT build=$B lint=$L typecheck=$T test=$V\"; exit $B"
