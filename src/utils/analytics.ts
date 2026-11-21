@@ -5,6 +5,7 @@
  * Остальное включается переменными окружения сборки (Netlify → Environment variables):
  *   VITE_YM_ID     — другой счётчик Метрики вместо основного (например, для теста)
  *   VITE_GA_ID     — другой поток GA4 вместо основного
+ *   VITE_GA_ID_2   — второй поток GA4 (по умолчанию G-EQ6MY83S62); события уходят в оба
  *   VITE_GADS_ID   — тег Google Ads, например AW-123456789 (ремаркетинг; конверсии берём из GA4)
  * Нет номера — соответствующий счётчик просто не грузится. В dev-режиме ничего не грузится.
  *
@@ -15,6 +16,8 @@ import type { Router } from 'vue-router'
 
 const YM_ID = Number(import.meta.env.VITE_YM_ID || 114234732)
 const GA_ID = String(import.meta.env.VITE_GA_ID || 'G-5Y8BPFHFLP')
+// Второй ресурс GA4 (аккаунт владельца, связан с Google Ads Brillex). События уходят в оба потока.
+const GA_ID_2 = String(import.meta.env.VITE_GA_ID_2 || 'G-EQ6MY83S62')
 const GADS_ID = String(import.meta.env.VITE_GADS_ID || '')
 
 declare global {
@@ -87,6 +90,8 @@ function initGtag() {
   // GA4 сам считает переходы внутри SPA («Расширенная статистика» → изменения истории браузера)
   if (GA_ID)
     window.gtag('config', GA_ID)
+  if (GA_ID_2 && GA_ID_2 !== GA_ID)
+    window.gtag('config', GA_ID_2)
   if (GADS_ID)
     window.gtag('config', GADS_ID)
 }
